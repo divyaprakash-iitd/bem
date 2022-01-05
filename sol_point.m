@@ -1,10 +1,8 @@
-function [x,y,phi] = calculate_domain(bem,N)
-% calculate_domain: Calculates the unknowns at N^2 points distributed 
-% uniformly inside the domain
-%   [x,y,phi] = calculate_domain(bem,N):
-%   Calculates the unknowns at N^2 points distributed uniformly inside the
-%   domain
-%
+function sol = sol_point(bem,xi,eta)
+% sol_point: Solves for the solution at a point
+%   sum = sol_point(bem,xi,eta):
+%   Solves for the solution at a point (xi, eta)
+
 % input:
 %   bem  =  A structure representing a boundary element model
 %           bem.nelem       = No. of elements
@@ -18,31 +16,26 @@ function [x,y,phi] = calculate_domain(bem,N)
 %           bem.bc.phi      = Value of the Dirichlet BC at each element
 %           bem.bc.dphi     = Value of the Neumann BC at each element
 %           bem.bc.type     = Type of BC of ab element->1:Dirichlet,2:Neumann
-%   N   =   Square root of the number of points at which the solution
-%           needs to be calculated
+%   xi  =   x-ccordinate of the point
+%   eta =   x-ccordinate of the point
 % output: 
-%   x   =   A matrix containing the x-coordinates of the points
-%   y   =   A matrix containing the y-coordinates of the points
-%   phi =   A matrix containing the values of phi at the N^2 points
+%   sol = Solution at the provided point
 %           
 % Author: Divyaprakash
 %         Mechanical Engineer
 % e-mail: divyaprakash.poddar@gmail.com
 % Date  : 05 January 2022
 
-    r           = linspace(0,0.9,N);
-    theta       = linspace(0,2*pi,N);
-    [R, THETA]  = meshgrid(r,theta);
-    x           = R.*cos(THETA);
-    y           = R.*sin(THETA);
-    phi         = zeros(N,N);
-    
-    % Calculate the solution
-    for iN = 1:N
-        for jN = 1:N
-            xi  = x(iN,jN);
-            eta = y(iN,jN);
-            phi(iN,jN) = sol_point(bem,xi,eta);
-        end
+    sol = 0;
+    for i=1:bem.nelem
+        xk = bem.boundary.x(i); 
+        yk = bem.boundary.y(i);
+        nkx = bem.normal.x(i); 
+        nky = bem.normal.y(i);
+        L = bem.lelem(i);
+        F1 = IF1(xi,eta,xk,yk,nkx,nky,L);
+        F2 = IF2(xi,eta,xk,yk,nkx,nky,L);
+        ss = bem.bc.phi(i)*F2-bem.bc.dphi(i)*F1;
+        sol = sol + ss;
     end
 end
