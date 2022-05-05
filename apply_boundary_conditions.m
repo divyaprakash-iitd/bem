@@ -37,7 +37,7 @@ function bem = apply_boundary_conditions(bem,phi,dphi)
             bem.bc.phi(i)  = phi;
         else 
             bem.bc.type(i) = 1;
-            bem.bc.phi(i)  = dphi;
+            bem.bc.dphi(i)  = dphi;
         end
     end
 end
